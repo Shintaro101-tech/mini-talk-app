@@ -88,10 +88,17 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
+    transition: border-color 0.3s;
   }
 
   .slot-window.spinning {
     border-color: #a78bfa;
+    animation: borderPulse 0.6s ease-in-out infinite alternate;
+  }
+
+  @keyframes borderPulse {
+    from { border-color: #a78bfa; box-shadow: 0 0 0px rgba(167,139,250,0); }
+    to   { border-color: #7c3aed; box-shadow: 0 0 16px rgba(167,139,250,0.5); }
   }
 
   .slot-text {
@@ -99,7 +106,6 @@
     font-weight: 700;
     color: #4a4a6a;
     line-height: 1.5;
-    transition: opacity 0.1s;
   }
 
   .slot-text.placeholder {
@@ -110,7 +116,7 @@
 
   .slot-text.decided {
     color: #6c2bd9;
-    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .name-slot .slot-text.decided {
@@ -119,14 +125,22 @@
   }
 
   @keyframes popIn {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0%   { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+
+  /* ボタンエリア */
+  .btn-group {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 16px 36px;
     border: none;
     border-radius: 50px;
@@ -135,39 +149,63 @@
     font-weight: 700;
     color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+    transition: all 0.2s ease;
   }
 
-  .btn:active {
+  .btn:active:not(:disabled) {
     transform: scale(0.95);
   }
 
   .btn:disabled {
-    opacity: 0.6;
+    opacity: 0.35;
     cursor: not-allowed;
     transform: none;
   }
 
-  .btn-theme {
+  /* スタートボタン */
+  .btn-start-theme {
     background: linear-gradient(135deg, #f093fb, #f5576c);
-    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+    box-shadow: 0 8px 25px rgba(245,87,108,0.4);
   }
-
-  .btn-theme:hover:not(:disabled) {
-    box-shadow: 0 12px 35px rgba(245, 87, 108, 0.55);
+  .btn-start-theme:hover:not(:disabled) {
+    box-shadow: 0 12px 35px rgba(245,87,108,0.55);
     transform: translateY(-2px);
   }
 
-  .btn-name {
+  .btn-start-name {
     background: linear-gradient(135deg, #4facfe, #00f2fe);
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    box-shadow: 0 8px 25px rgba(79,172,254,0.4);
+  }
+  .btn-start-name:hover:not(:disabled) {
+    box-shadow: 0 12px 35px rgba(79,172,254,0.55);
+    transform: translateY(-2px);
   }
 
-  .btn-name:hover:not(:disabled) {
-    box-shadow: 0 12px 35px rgba(79, 172, 254, 0.55);
+  /* ストップボタン */
+  .btn-stop {
+    background: linear-gradient(135deg, #ff6b6b, #ee0979);
+    box-shadow: 0 8px 25px rgba(238,9,121,0.4);
+    animation: stopPulse 0.8s ease-in-out infinite alternate;
+  }
+  .btn-stop:hover:not(:disabled) {
+    box-shadow: 0 12px 35px rgba(238,9,121,0.6);
     transform: translateY(-2px);
+  }
+
+  @keyframes stopPulse {
+    from { box-shadow: 0 8px 25px rgba(238,9,121,0.4); }
+    to   { box-shadow: 0 8px 35px rgba(238,9,121,0.75); }
+  }
+
+  .number-badge {
+    display: inline-block;
+    background: #a78bfa;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
   }
 
   .confetti-container {
@@ -180,43 +218,13 @@
 
   .confetti {
     position: absolute;
-    width: 10px;
-    height: 10px;
     border-radius: 2px;
     animation: confettiFall linear forwards;
   }
 
   @keyframes confettiFall {
-    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    0%   { transform: translateY(-10px) rotate(0deg);   opacity: 1; }
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-
-  .sparkle {
-    position: absolute;
-    font-size: 1.5rem;
-    animation: sparkleAnim 0.8s ease-out forwards;
-    pointer-events: none;
-  }
-
-  @keyframes sparkleAnim {
-    0% { transform: scale(0) rotate(0deg); opacity: 1; }
-    50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
-    100% { transform: scale(0) rotate(360deg); opacity: 0; }
-  }
-
-  .number-badge {
-    display: inline-block;
-    background: #a78bfa;
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    margin-bottom: 10px;
-  }
-
-  .name-slot .number-badge {
-    background: #06b6d4;
   }
 
   footer {
@@ -230,7 +238,7 @@
     .card { padding: 25px 18px; }
     .slot-text { font-size: 1.15rem; }
     .name-slot .slot-text.decided { font-size: 1.5rem; }
-    .btn { padding: 14px 28px; font-size: 1rem; }
+    .btn { padding: 14px 26px; font-size: 1rem; }
   }
 </style>
 </head>
@@ -244,13 +252,17 @@
   <div class="card-icon">🎰</div>
   <div class="card-title">今日のミニトークテーマ</div>
   <div class="slot-window" id="themeSlot">
-    <div class="slot-text placeholder" id="themeText">ボタンを押してね！</div>
+    <div class="slot-text placeholder" id="themeText">スタートを押してね！</div>
   </div>
   <div class="number-badge" id="themeBadge" style="display:none">No. --</div>
-  <br>
-  <button class="btn btn-theme" id="themeBtn" onclick="spinTheme()">
-    🎲 テーマを決める！
-  </button>
+  <div class="btn-group">
+    <button class="btn btn-start-theme" id="themeStartBtn" onclick="startTheme()">
+      ▶ スタート
+    </button>
+    <button class="btn btn-stop" id="themeStopBtn" onclick="stopTheme()" disabled style="display:none">
+      ⏹ ストップ
+    </button>
+  </div>
 </div>
 
 <!-- 名前カード -->
@@ -258,15 +270,19 @@
   <div class="card-icon">💬</div>
   <div class="card-title">今日はあなたの意見が聞きたい❤️</div>
   <div class="slot-window name-slot" id="nameSlot">
-    <div class="slot-text placeholder" id="nameText">ボタンを押してね！</div>
+    <div class="slot-text placeholder" id="nameText">スタートを押してね！</div>
   </div>
-  <button class="btn btn-name" id="nameBtn" onclick="spinName()">
-    🙋 発表者を決める！
-  </button>
+  <div class="btn-group">
+    <button class="btn btn-start-name" id="nameStartBtn" onclick="startName()">
+      ▶ スタート
+    </button>
+    <button class="btn btn-stop" id="nameStopBtn" onclick="stopName()" disabled style="display:none">
+      ⏹ ストップ
+    </button>
+  </div>
 </div>
 
 <footer>Mini Talk App — 朝の会をもっと楽しく</footer>
-
 <div class="confetti-container" id="confettiContainer"></div>
 
 <script>
@@ -387,7 +403,7 @@ const names = [
   "阿嘉鈴香先生"
 ];
 
-// ===== Web Audio API 効果音 =====
+// ===== Web Audio API =====
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 
@@ -402,47 +418,39 @@ function playTick() {
   const gain = ctx.createGain();
   osc.connect(gain);
   gain.connect(ctx.destination);
-  osc.frequency.value = 800 + Math.random() * 400;
+  osc.frequency.value = 700 + Math.random() * 500;
   osc.type = 'sine';
-  gain.gain.setValueAtTime(0.08, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+  gain.gain.setValueAtTime(0.07, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
   osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.05);
+  osc.stop(ctx.currentTime + 0.04);
 }
 
 function playDecide() {
   const ctx = getAudioCtx();
-  const notes = [523, 659, 784, 1047];
-  notes.forEach((freq, i) => {
+  [523, 659, 784, 1047].forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq; osc.type = 'sine';
     const t = ctx.currentTime + i * 0.1;
     gain.gain.setValueAtTime(0.15, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-    osc.start(t);
-    osc.stop(t + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc.start(t); osc.stop(t + 0.35);
   });
 }
 
 function playFanfare() {
   const ctx = getAudioCtx();
-  const notes = [392, 523, 659, 784, 1047];
-  notes.forEach((freq, i) => {
+  [392, 523, 659, 784, 1047].forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'triangle';
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq; osc.type = 'triangle';
     const t = ctx.currentTime + i * 0.12;
     gain.gain.setValueAtTime(0.18, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-    osc.start(t);
-    osc.stop(t + 0.4);
+    osc.start(t); osc.stop(t + 0.4);
   });
 }
 
@@ -450,92 +458,126 @@ function playFanfare() {
 function launchConfetti() {
   const container = document.getElementById('confettiContainer');
   const colors = ['#f093fb','#f5576c','#fda085','#4facfe','#00f2fe','#43e97b','#ffd700','#ff6b6b'];
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     const c = document.createElement('div');
     c.className = 'confetti';
     c.style.left = Math.random() * 100 + '%';
     c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    c.style.width = (6 + Math.random() * 8) + 'px';
+    c.style.width  = (6 + Math.random() * 8) + 'px';
     c.style.height = (6 + Math.random() * 8) + 'px';
     c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-    c.style.animationDelay = Math.random() * 0.5 + 's';
+    c.style.animationDelay   = Math.random() * 0.4 + 's';
     container.appendChild(c);
     setTimeout(() => c.remove(), 4000);
   }
 }
 
-// ===== スロット回転ロジック =====
-let themeSpinning = false;
-let nameSpinning = false;
+// ===== スロット管理 =====
+// theme
+let themeTimer = null;
+let themeInterval = 60;
+let themeStopping = false;
 
-function spinSlot(textEl, slotEl, items, btn, badgeEl, onDone) {
-  btn.disabled = true;
+function startTheme() {
+  const textEl  = document.getElementById('themeText');
+  const slotEl  = document.getElementById('themeSlot');
+  const startBtn = document.getElementById('themeStartBtn');
+  const stopBtn  = document.getElementById('themeStopBtn');
+  const badge    = document.getElementById('themeBadge');
+
+  badge.style.display = 'none';
   textEl.className = 'slot-text';
   slotEl.classList.add('spinning');
-
-  let count = 0;
-  const totalTicks = 20 + Math.floor(Math.random() * 10);
-  let interval = 50;
+  startBtn.style.display = 'none';
+  stopBtn.style.display  = 'inline-flex';
+  stopBtn.disabled = false;
+  themeStopping = false;
+  themeInterval = 60;
 
   function tick() {
-    const idx = Math.floor(Math.random() * items.length);
-    textEl.textContent = items[idx];
+    const idx = Math.floor(Math.random() * themes.length);
+    textEl.textContent = items_theme_last = themes[idx];
+    items_theme_last_idx = idx;
     playTick();
-    count++;
-
-    if (count >= totalTicks) {
-      // 確定
-      const finalIdx = Math.floor(Math.random() * items.length);
-      textEl.textContent = items[finalIdx];
-      textEl.classList.add('decided');
-      slotEl.classList.remove('spinning');
-      btn.disabled = false;
-      if (onDone) onDone(finalIdx);
-      return;
+    if (!themeStopping) {
+      themeTimer = setTimeout(tick, themeInterval);
+    } else {
+      // 減速して止まる
+      themeInterval += 35;
+      if (themeInterval < 500) {
+        themeTimer = setTimeout(tick, themeInterval);
+      } else {
+        // 確定
+        slotEl.classList.remove('spinning');
+        textEl.classList.add('decided');
+        badge.style.display = 'inline-block';
+        badge.textContent = 'No. ' + (items_theme_last_idx + 1);
+        stopBtn.style.display  = 'none';
+        startBtn.style.display = 'inline-flex';
+        playDecide();
+        launchConfetti();
+      }
     }
-
-    // 徐々に減速
-    if (count > totalTicks * 0.6) {
-      interval += 30;
-    } else if (count > totalTicks * 0.4) {
-      interval += 10;
-    }
-
-    setTimeout(tick, interval);
   }
-
   tick();
 }
 
-function spinTheme() {
-  if (themeSpinning) return;
-  themeSpinning = true;
-  const textEl = document.getElementById('themeText');
-  const slotEl = document.getElementById('themeSlot');
-  const btn = document.getElementById('themeBtn');
-  const badge = document.getElementById('themeBadge');
+let items_theme_last = '';
+let items_theme_last_idx = 0;
 
-  spinSlot(textEl, slotEl, themes, btn, badge, (idx) => {
-    badge.style.display = 'inline-block';
-    badge.textContent = 'No. ' + (idx + 1);
-    playDecide();
-    launchConfetti();
-    themeSpinning = false;
-  });
+function stopTheme() {
+  themeStopping = true;
+  document.getElementById('themeStopBtn').disabled = true;
 }
 
-function spinName() {
-  if (nameSpinning) return;
-  nameSpinning = true;
-  const textEl = document.getElementById('nameText');
-  const slotEl = document.getElementById('nameSlot');
-  const btn = document.getElementById('nameBtn');
+// name
+let nameTimer = null;
+let nameInterval = 60;
+let nameStopping = false;
+let name_last_idx = 0;
 
-  spinSlot(textEl, slotEl, names, btn, null, () => {
-    playFanfare();
-    launchConfetti();
-    nameSpinning = false;
-  });
+function startName() {
+  const textEl   = document.getElementById('nameText');
+  const slotEl   = document.getElementById('nameSlot');
+  const startBtn = document.getElementById('nameStartBtn');
+  const stopBtn  = document.getElementById('nameStopBtn');
+
+  textEl.className = 'slot-text';
+  slotEl.classList.add('spinning');
+  startBtn.style.display = 'none';
+  stopBtn.style.display  = 'inline-flex';
+  stopBtn.disabled = false;
+  nameStopping = false;
+  nameInterval = 60;
+
+  function tick() {
+    const idx = Math.floor(Math.random() * names.length);
+    textEl.textContent = names[idx];
+    name_last_idx = idx;
+    playTick();
+    if (!nameStopping) {
+      nameTimer = setTimeout(tick, nameInterval);
+    } else {
+      nameInterval += 35;
+      if (nameInterval < 500) {
+        nameTimer = setTimeout(tick, nameInterval);
+      } else {
+        // 確定
+        slotEl.classList.remove('spinning');
+        textEl.classList.add('decided');
+        stopBtn.style.display  = 'none';
+        startBtn.style.display = 'inline-flex';
+        playFanfare();
+        launchConfetti();
+      }
+    }
+  }
+  tick();
+}
+
+function stopName() {
+  nameStopping = true;
+  document.getElementById('nameStopBtn').disabled = true;
 }
 </script>
 </body>
