@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>朝の会 ミニトーク</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 800;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.95rem;
+    margin-bottom: 35px;
+    text-align: center;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 24px;
+    padding: 35px 30px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+  }
+
+  .card.theme-card::before {
+    background: linear-gradient(90deg, #f093fb, #f5576c, #fda085);
+  }
+
+  .card.name-card::before {
+    background: linear-gradient(90deg, #4facfe, #00f2fe, #43e97b);
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 20px;
+  }
+
+  .slot-window {
+    background: linear-gradient(180deg, #f8f9ff, #eef1ff);
+    border: 3px solid #e0e4f5;
+    border-radius: 16px;
+    padding: 25px 20px;
+    margin-bottom: 25px;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slot-window.spinning {
+    border-color: #a78bfa;
+  }
+
+  .slot-text {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #4a4a6a;
+    line-height: 1.5;
+    transition: opacity 0.1s;
+  }
+
+  .slot-text.placeholder {
+    color: #b0b0c8;
+    font-weight: 400;
+    font-size: 1.1rem;
+  }
+
+  .slot-text.decided {
+    color: #6c2bd9;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .name-slot .slot-text.decided {
+    font-size: 2rem;
+    color: #0891b2;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 36px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:active {
+    transform: scale(0.95);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-theme {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+  }
+
+  .btn-theme:hover:not(:disabled) {
+    box-shadow: 0 12px 35px rgba(245, 87, 108, 0.55);
+    transform: translateY(-2px);
+  }
+
+  .btn-name {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+  }
+
+  .btn-name:hover:not(:disabled) {
+    box-shadow: 0 12px 35px rgba(79, 172, 254, 0.55);
+    transform: translateY(-2px);
+  }
+
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  .sparkle {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: sparkleAnim 0.8s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes sparkleAnim {
+    0% { transform: scale(0) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+
+  .number-badge {
+    display: inline-block;
+    background: #a78bfa;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .name-slot .number-badge {
+    background: #06b6d4;
+  }
+
+  footer {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+    margin-top: 20px;
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.5rem; }
+    .card { padding: 25px 18px; }
+    .slot-text { font-size: 1.15rem; }
+    .name-slot .slot-text.decided { font-size: 1.5rem; }
+    .btn { padding: 14px 28px; font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>☀️ 朝の会 ミニトーク</h1>
+<p class="subtitle">長期研修員のみなさん、おはようございます！</p>
+
+<!-- テーマカード -->
+<div class="card theme-card">
+  <div class="card-icon">🎰</div>
+  <div class="card-title">今日のミニトークテーマ</div>
+  <div class="slot-window" id="themeSlot">
+    <div class="slot-text placeholder" id="themeText">ボタンを押してね！</div>
+  </div>
+  <div class="number-badge" id="themeBadge" style="display:none">No. --</div>
+  <br>
+  <button class="btn btn-theme" id="themeBtn" onclick="spinTheme()">
+    🎲 テーマを決める！
+  </button>
+</div>
+
+<!-- 名前カード -->
+<div class="card name-card">
+  <div class="card-icon">💬</div>
+  <div class="card-title">今日はあなたの意見が聞きたい❤️</div>
+  <div class="slot-window name-slot" id="nameSlot">
+    <div class="slot-text placeholder" id="nameText">ボタンを押してね！</div>
+  </div>
+  <button class="btn btn-name" id="nameBtn" onclick="spinName()">
+    🙋 発表者を決める！
+  </button>
+</div>
+
+<footer>Mini Talk App — 朝の会をもっと楽しく</footer>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+// ===== テーマ一覧 =====
+const themes = [
+  "最近ハマっていること",
+  "子どもの頃の夢は何だった？",
+  "休日の過ごし方",
+  "自分を動物に例えると？",
+  "人生で一番おいしかったもの",
+  "行ってみたい国・場所",
+  "最近読んだ本・観た映画",
+  "自分の隠れた特技",
+  "朝型？夜型？その理由",
+  "無人島に一つだけ持っていくなら？",
+  "学生時代に一番好きだった教科",
+  "最近買ってよかったもの",
+  "自分の地元の好きなところ",
+  "得意料理はある？",
+  "小学生の自分に一言伝えるなら？",
+  "教員になったきっかけ",
+  "今まで一番うれしかった生徒の言葉",
+  "自分の担当教科の「ここが面白い！」",
+  "他の教科を教えるなら何を選ぶ？",
+  "授業で大失敗したエピソード",
+  "尊敬する先生（恩師）の話",
+  "生徒から学んだこと",
+  "小学校と高校、ここが違う！",
+  "教員生活で一番成長したと思う瞬間",
+  "おすすめの授業ネタ・教材",
+  "教員になって驚いたこと",
+  "生徒にウケた鉄板ネタ",
+  "学校行事で一番好きなもの",
+  "保護者に言われて印象に残っている言葉",
+  "職員室での自分の過ごし方",
+  "教員をやっていて一番大変なこと",
+  "新任の頃の自分に声をかけるなら？",
+  "担任と教科担当、どっちが好き？",
+  "忘れられない卒業式のエピソード",
+  "教え子との再会エピソード",
+  "大切にしている言葉・座右の銘",
+  "10年後の自分はどうなっていたい？",
+  "「大人になってわかったこと」",
+  "もし1日だけ別の職業を体験できるなら？",
+  "人生で一番大きな決断",
+  "自分の性格で好きなところ",
+  "ストレス解消法は？",
+  "「これだけは譲れない」こだわり",
+  "もし100万円もらったら何に使う？",
+  "幸せを感じる瞬間",
+  "人生のターニングポイント",
+  "最近感動したこと",
+  "自分を一言で表すと？",
+  "やめてよかった習慣・始めてよかった習慣",
+  "「あの時やっておけばよかった」と思うこと",
+  "AIは教育をどう変えると思う？",
+  "子どもに一番身につけてほしい力は？",
+  "「いい先生」とはどんな先生？",
+  "学校の「当たり前」で変えたいこと",
+  "自分が生徒だったら、自分の授業を受けたい？",
+  "教科書に載せたい内容を一つ追加するなら？",
+  "保護者との関係づくりで大事にしていること",
+  "研修で学んだことをどう現場に持ち帰る？",
+  "学校教育で一番大事な時間は？",
+  "宿題は必要だと思う？",
+  "部活動の在り方について思うこと",
+  "不登校の子への対応で心がけていること",
+  "GIGAスクール構想、現場でどう感じている？",
+  "通知表のコメント、どう書いている？",
+  "「叱る」と「怒る」の違いは？",
+  "教員の働き方改革、理想と現実",
+  "異学年交流の良さとは？",
+  "地域との連携で印象的だったこと",
+  "インクルーシブ教育で大切にしていること",
+  "20年後の学校はどうなっていると思う？",
+  "夏と冬、どっちが好き？",
+  "猫派？犬派？",
+  "タイムマシンで過去と未来、どっちに行く？",
+  "カレーは甘口派？辛口派？",
+  "インドア派？アウトドア派？",
+  "山と海、どっちが好き？",
+  "朝ごはんはパン派？ごはん派？",
+  "旅行は計画派？ノープラン派？",
+  "電話派？メール・チャット派？",
+  "きのこの山？たけのこの里？",
+  "生まれ変わるなら男？女？",
+  "一生食べ続けるなら和食？洋食？",
+  "都会暮らし？田舎暮らし？",
+  "映画館派？おうち映画派？",
+  "コーヒー派？お茶派？",
+  "生徒に「先生の印象」を聞いたら何て言われそう？",
+  "教員あるある（共感を求む！）",
+  "自分の地元の自慢を30秒で！",
+  "最近の「小さな幸せ」",
+  "前世があるとしたら何だったと思う？",
+  "研修が終わったら一番にやりたいこと",
+  "このメンバーへの第一印象（正直に！）",
+  "もし透明人間になれたら何をする？",
+  "自分のテーマソングを選ぶなら？",
+  "宝くじが当たっても教員を続ける？",
+  "今の自分を漢字一文字で表すと？",
+  "校長先生になったら最初にやること",
+  "生徒と本気で勝負して勝てること",
+  "自分を色に例えると何色？",
+  "この研修を終えた未来の自分に一言！"
+];
+
+// ===== 名前一覧 =====
+const names = [
+  "親川翔吾先生",
+  "島袋恵人先生",
+  "金城弥恵先生",
+  "田仲康希先生",
+  "中村千草先生",
+  "堀川晋太朗先生"
+];
+
+// ===== Web Audio API 効果音 =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playTick() {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = 800 + Math.random() * 400;
+  osc.type = 'sine';
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.05);
+}
+
+function playDecide() {
+  const ctx = getAudioCtx();
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    const t = ctx.currentTime + i * 0.1;
+    gain.gain.setValueAtTime(0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.start(t);
+    osc.stop(t + 0.3);
+  });
+}
+
+function playFanfare() {
+  const ctx = getAudioCtx();
+  const notes = [392, 523, 659, 784, 1047];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'triangle';
+    const t = ctx.currentTime + i * 0.12;
+    gain.gain.setValueAtTime(0.18, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    osc.start(t);
+    osc.stop(t + 0.4);
+  });
+}
+
+// ===== 紙吹雪 =====
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#f093fb','#f5576c','#fda085','#4facfe','#00f2fe','#43e97b','#ffd700','#ff6b6b'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    c.style.width = (6 + Math.random() * 8) + 'px';
+    c.style.height = (6 + Math.random() * 8) + 'px';
+    c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    c.style.animationDelay = Math.random() * 0.5 + 's';
+    container.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+// ===== スロット回転ロジック =====
+let themeSpinning = false;
+let nameSpinning = false;
+
+function spinSlot(textEl, slotEl, items, btn, badgeEl, onDone) {
+  btn.disabled = true;
+  textEl.className = 'slot-text';
+  slotEl.classList.add('spinning');
+
+  let count = 0;
+  const totalTicks = 20 + Math.floor(Math.random() * 10);
+  let interval = 50;
+
+  function tick() {
+    const idx = Math.floor(Math.random() * items.length);
+    textEl.textContent = items[idx];
+    playTick();
+    count++;
+
+    if (count >= totalTicks) {
+      // 確定
+      const finalIdx = Math.floor(Math.random() * items.length);
+      textEl.textContent = items[finalIdx];
+      textEl.classList.add('decided');
+      slotEl.classList.remove('spinning');
+      btn.disabled = false;
+      if (onDone) onDone(finalIdx);
+      return;
+    }
+
+    // 徐々に減速
+    if (count > totalTicks * 0.6) {
+      interval += 30;
+    } else if (count > totalTicks * 0.4) {
+      interval += 10;
+    }
+
+    setTimeout(tick, interval);
+  }
+
+  tick();
+}
+
+function spinTheme() {
+  if (themeSpinning) return;
+  themeSpinning = true;
+  const textEl = document.getElementById('themeText');
+  const slotEl = document.getElementById('themeSlot');
+  const btn = document.getElementById('themeBtn');
+  const badge = document.getElementById('themeBadge');
+
+  spinSlot(textEl, slotEl, themes, btn, badge, (idx) => {
+    badge.style.display = 'inline-block';
+    badge.textContent = 'No. ' + (idx + 1);
+    playDecide();
+    launchConfetti();
+    themeSpinning = false;
+  });
+}
+
+function spinName() {
+  if (nameSpinning) return;
+  nameSpinning = true;
+  const textEl = document.getElementById('nameText');
+  const slotEl = document.getElementById('nameSlot');
+  const btn = document.getElementById('nameBtn');
+
+  spinSlot(textEl, slotEl, names, btn, null, () => {
+    playFanfare();
+    launchConfetti();
+    nameSpinning = false;
+  });
+}
+</script>
+</body>
+</html>
