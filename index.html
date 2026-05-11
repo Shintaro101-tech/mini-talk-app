@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>朝の会 ミニトーク</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
 
@@ -25,17 +27,37 @@
     font-size: 2rem;
     font-weight: 800;
     text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     text-align: center;
   }
 
   .subtitle {
     color: rgba(255,255,255,0.85);
     font-size: 0.95rem;
-    margin-bottom: 35px;
+    margin-bottom: 16px;
     text-align: center;
   }
 
+  /* 設定ボタン */
+  .settings-btn {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.5);
+    color: #fff;
+    border-radius: 50px;
+    padding: 8px 22px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 28px;
+    transition: all 0.2s;
+  }
+  .settings-btn:hover {
+    background: rgba(255,255,255,0.35);
+    transform: translateY(-1px);
+  }
+
+  /* カード */
   .card {
     background: rgba(255,255,255,0.95);
     border-radius: 24px;
@@ -48,34 +70,19 @@
     position: relative;
     overflow: hidden;
   }
-
   .card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 5px;
   }
+  .card.theme-card::before { background: linear-gradient(90deg, #f093fb, #f5576c, #fda085); }
+  .card.name-card::before  { background: linear-gradient(90deg, #4facfe, #00f2fe, #43e97b); }
 
-  .card.theme-card::before {
-    background: linear-gradient(90deg, #f093fb, #f5576c, #fda085);
-  }
+  .card-icon  { font-size: 2.5rem; margin-bottom: 10px; }
+  .card-title { font-size: 1.1rem; font-weight: 700; color: #555; margin-bottom: 20px; }
 
-  .card.name-card::before {
-    background: linear-gradient(90deg, #4facfe, #00f2fe, #43e97b);
-  }
-
-  .card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #555;
-    margin-bottom: 20px;
-  }
-
+  /* スロット枠 */
   .slot-window {
     background: linear-gradient(180deg, #f8f9ff, #eef1ff);
     border: 3px solid #e0e4f5;
@@ -86,56 +93,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
     transition: border-color 0.3s;
   }
-
   .slot-window.spinning {
-    border-color: #a78bfa;
     animation: borderPulse 0.6s ease-in-out infinite alternate;
   }
-
   @keyframes borderPulse {
-    from { border-color: #a78bfa; box-shadow: 0 0 0px rgba(167,139,250,0); }
+    from { border-color: #a78bfa; box-shadow: 0 0 0 rgba(167,139,250,0); }
     to   { border-color: #7c3aed; box-shadow: 0 0 16px rgba(167,139,250,0.5); }
   }
 
-  .slot-text {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #4a4a6a;
-    line-height: 1.5;
-  }
-
-  .slot-text.placeholder {
-    color: #b0b0c8;
-    font-weight: 400;
-    font-size: 1.1rem;
-  }
-
-  .slot-text.decided {
-    color: #6c2bd9;
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .name-slot .slot-text.decided {
-    font-size: 2rem;
-    color: #0891b2;
-  }
+  .slot-text { font-size: 1.35rem; font-weight: 700; color: #4a4a6a; line-height: 1.5; }
+  .slot-text.placeholder { color: #b0b0c8; font-weight: 400; font-size: 1.1rem; }
+  .slot-text.decided { color: #6c2bd9; animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  .name-slot .slot-text.decided { font-size: 2rem; color: #0891b2; }
 
   @keyframes popIn {
     0%   { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(1);   opacity: 1; }
   }
 
-  /* ボタンエリア */
-  .btn-group {
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+  /* ボタン */
+  .btn-group { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
   .btn {
     display: inline-flex;
@@ -151,47 +130,20 @@
     cursor: pointer;
     transition: all 0.2s ease;
   }
+  .btn:active:not(:disabled) { transform: scale(0.95); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
-  .btn:active:not(:disabled) {
-    transform: scale(0.95);
-  }
+  .btn-start-theme { background: linear-gradient(135deg, #f093fb, #f5576c); box-shadow: 0 8px 25px rgba(245,87,108,0.4); }
+  .btn-start-theme:hover:not(:disabled) { box-shadow: 0 12px 35px rgba(245,87,108,0.55); transform: translateY(-2px); }
 
-  .btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    transform: none;
-  }
+  .btn-start-name { background: linear-gradient(135deg, #4facfe, #00f2fe); box-shadow: 0 8px 25px rgba(79,172,254,0.4); }
+  .btn-start-name:hover:not(:disabled) { box-shadow: 0 12px 35px rgba(79,172,254,0.55); transform: translateY(-2px); }
 
-  /* スタートボタン */
-  .btn-start-theme {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
-    box-shadow: 0 8px 25px rgba(245,87,108,0.4);
-  }
-  .btn-start-theme:hover:not(:disabled) {
-    box-shadow: 0 12px 35px rgba(245,87,108,0.55);
-    transform: translateY(-2px);
-  }
-
-  .btn-start-name {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    box-shadow: 0 8px 25px rgba(79,172,254,0.4);
-  }
-  .btn-start-name:hover:not(:disabled) {
-    box-shadow: 0 12px 35px rgba(79,172,254,0.55);
-    transform: translateY(-2px);
-  }
-
-  /* ストップボタン */
   .btn-stop {
     background: linear-gradient(135deg, #ff6b6b, #ee0979);
     box-shadow: 0 8px 25px rgba(238,9,121,0.4);
     animation: stopPulse 0.8s ease-in-out infinite alternate;
   }
-  .btn-stop:hover:not(:disabled) {
-    box-shadow: 0 12px 35px rgba(238,9,121,0.6);
-    transform: translateY(-2px);
-  }
-
   @keyframes stopPulse {
     from { box-shadow: 0 8px 25px rgba(238,9,121,0.4); }
     to   { box-shadow: 0 8px 35px rgba(238,9,121,0.75); }
@@ -208,29 +160,171 @@
     margin-bottom: 14px;
   }
 
-  .confetti-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 1000;
-  }
-
-  .confetti {
-    position: absolute;
-    border-radius: 2px;
-    animation: confettiFall linear forwards;
-  }
-
+  /* 紙吹雪 */
+  .confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 1000; }
+  .confetti { position: absolute; border-radius: 2px; animation: confettiFall linear forwards; }
   @keyframes confettiFall {
     0%   { transform: translateY(-10px) rotate(0deg);   opacity: 1; }
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
 
-  footer {
-    color: rgba(255,255,255,0.6);
-    font-size: 0.8rem;
-    margin-top: 20px;
+  footer { color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-top: 20px; }
+
+  /* ===================== 設定モーダル ===================== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 680px;
+    margin: auto;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+  }
+  .modal-header h2 { font-size: 1.2rem; }
+  .modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.35); }
+
+  /* タブ */
+  .modal-tabs { display: flex; border-bottom: 2px solid #eee; }
+  .tab-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border: none;
+    background: none;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #aaa;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { color: #6c2bd9; border-bottom-color: #6c2bd9; }
+
+  /* タブコンテンツ */
+  .tab-content { display: none; padding: 0 16px 16px; max-height: 55vh; overflow-y: auto; }
+  .tab-content.active { display: block; }
+
+  /* アイテムリスト */
+  .item-list { list-style: none; }
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 4px;
+    border-bottom: 1px solid #f3f3f3;
+  }
+  .item-row:last-child { border-bottom: none; }
+
+  .item-number { color: #ccc; font-size: 0.78rem; min-width: 26px; text-align: right; flex-shrink: 0; }
+  .item-text   { flex: 1; font-size: 0.93rem; color: #333; line-height: 1.4; word-break: break-all; }
+  .item-input  {
+    flex: 1;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 0.93rem;
+    border: 2px solid #a78bfa;
+    border-radius: 8px;
+    padding: 5px 10px;
+    outline: none;
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .btn-icon:hover { background: #f5f5f5; }
+
+  /* 追加フォーム */
+  .add-form {
+    display: flex;
+    gap: 8px;
+    padding: 14px 4px 4px;
+    border-top: 2px solid #f0f0f0;
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+  }
+  .add-input {
+    flex: 1;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 0.93rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .add-input:focus { border-color: #a78bfa; }
+  .btn-add {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-weight: 700;
+    font-size: 0.93rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .btn-add:hover { opacity: 0.85; }
+
+  .save-status {
+    text-align: center;
+    font-size: 0.82rem;
+    color: #888;
+    padding: 8px;
+    min-height: 28px;
+  }
+
+  /* ローディング */
+  .loading-msg {
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 20px;
   }
 
   @media (max-width: 480px) {
@@ -239,6 +333,7 @@
     .slot-text { font-size: 1.15rem; }
     .name-slot .slot-text.decided { font-size: 1.5rem; }
     .btn { padding: 14px 26px; font-size: 1rem; }
+    .tab-btn { font-size: 0.85rem; }
   }
 </style>
 </head>
@@ -246,6 +341,7 @@
 
 <h1>☀️ 朝の会 ミニトーク</h1>
 <p class="subtitle">長期研修員のみなさん、おはようございます！</p>
+<button class="settings-btn" onclick="openSettings()">⚙️ 設定を変更する</button>
 
 <!-- テーマカード -->
 <div class="card theme-card">
@@ -256,12 +352,8 @@
   </div>
   <div class="number-badge" id="themeBadge" style="display:none">No. --</div>
   <div class="btn-group">
-    <button class="btn btn-start-theme" id="themeStartBtn" onclick="startTheme()">
-      ▶ スタート
-    </button>
-    <button class="btn btn-stop" id="themeStopBtn" onclick="stopTheme()" disabled style="display:none">
-      ⏹ ストップ
-    </button>
+    <button class="btn btn-start-theme" id="themeStartBtn" onclick="startTheme()">▶ スタート</button>
+    <button class="btn btn-stop" id="themeStopBtn" onclick="stopTheme()" disabled style="display:none">⏹ ストップ</button>
   </div>
 </div>
 
@@ -273,21 +365,70 @@
     <div class="slot-text placeholder" id="nameText">スタートを押してね！</div>
   </div>
   <div class="btn-group">
-    <button class="btn btn-start-name" id="nameStartBtn" onclick="startName()">
-      ▶ スタート
-    </button>
-    <button class="btn btn-stop" id="nameStopBtn" onclick="stopName()" disabled style="display:none">
-      ⏹ ストップ
-    </button>
+    <button class="btn btn-start-name" id="nameStartBtn" onclick="startName()">▶ スタート</button>
+    <button class="btn btn-stop" id="nameStopBtn" onclick="stopName()" disabled style="display:none">⏹ ストップ</button>
   </div>
 </div>
 
 <footer>Mini Talk App — 朝の会をもっと楽しく</footer>
 <div class="confetti-container" id="confettiContainer"></div>
 
+<!-- ===== 設定モーダル ===== -->
+<div id="settingsModal" class="modal-overlay" style="display:none" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ 設定</h2>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="tab-btn active" id="tabTopics" onclick="switchTab('topics')">
+        📋 トピック（<span id="topicCount">-</span>件）
+      </button>
+      <button class="tab-btn" id="tabNames" onclick="switchTab('names')">
+        👥 参加者（<span id="nameCount">-</span>名）
+      </button>
+    </div>
+
+    <!-- トピックタブ -->
+    <div class="tab-content active" id="contentTopics">
+      <ul class="item-list" id="topicsList"></ul>
+      <div class="add-form">
+        <input class="add-input" id="newTopicInput" placeholder="新しいトピックを追加..."
+               onkeydown="if(event.key==='Enter') addTopic()">
+        <button class="btn-add" onclick="addTopic()">＋ 追加</button>
+      </div>
+    </div>
+
+    <!-- 参加者タブ -->
+    <div class="tab-content" id="contentNames">
+      <ul class="item-list" id="namesList"></ul>
+      <div class="add-form">
+        <input class="add-input" id="newNameInput" placeholder="参加者名を追加（例：山田太郎先生）"
+               onkeydown="if(event.key==='Enter') addNameItem()">
+        <button class="btn-add" onclick="addNameItem()">＋ 追加</button>
+      </div>
+    </div>
+
+    <div class="save-status" id="saveStatus"></div>
+  </div>
+</div>
+
 <script>
-// ===== テーマ一覧 =====
-const themes = [
+// ===== Firebase 初期化 =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBMNFccbAiehnLBDJqNSBvjnlzwxEWXvjY",
+  authDomain: "mini-talk-84703.firebaseapp.com",
+  projectId: "mini-talk-84703",
+  storageBucket: "mini-talk-84703.firebasestorage.app",
+  messagingSenderId: "517181013824",
+  appId: "1:517181013824:web:d0792c300d628587b204a5"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const docRef = db.collection('settings').doc('data');
+
+// ===== デフォルトデータ =====
+const defaultThemes = [
   "最近ハマっていること",
   "子どもの頃の夢は何だった？",
   "休日の過ごし方",
@@ -417,8 +558,7 @@ const themes = [
   "にぎやかな場所にお店が出せるとしたら、どんな店にしたい？"
 ];
 
-// ===== 名前一覧 =====
-const names = [
+const defaultNames = [
   "親川翔吾先生",
   "島袋恵人先生",
   "金城弥恵先生",
@@ -430,54 +570,207 @@ const names = [
   "阿嘉鈴香先生"
 ];
 
-// ===== Web Audio API =====
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx;
+// ===== グローバル状態 =====
+let themes = [];
+let names  = [];
 
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new AudioCtx();
-  return audioCtx;
+// ===== Firestore 読み込み・リアルタイム同期 =====
+async function initData() {
+  try {
+    const snap = await docRef.get();
+    if (!snap.exists) {
+      await docRef.set({ themes: defaultThemes, names: defaultNames });
+    }
+  } catch(e) {
+    console.warn('Firestore初期化エラー:', e);
+    themes = [...defaultThemes];
+    names  = [...defaultNames];
+    return;
+  }
+
+  docRef.onSnapshot(snap => {
+    if (snap.exists) {
+      themes = snap.data().themes || [...defaultThemes];
+      names  = snap.data().names  || [...defaultNames];
+      updateCounts();
+      if (document.getElementById('settingsModal').style.display !== 'none') {
+        renderSettingsUI();
+      }
+    }
+  });
+}
+initData();
+
+// ===== Firestore 保存 =====
+let saveTimer;
+function saveToFirestore() {
+  const statusEl = document.getElementById('saveStatus');
+  statusEl.textContent = '保存中…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await docRef.set({ themes, names });
+      statusEl.textContent = '✅ 保存しました';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch(e) {
+      statusEl.textContent = '❌ 保存に失敗しました';
+    }
+  }, 600);
 }
 
+// ===== 設定モーダル =====
+function openSettings() {
+  document.getElementById('settingsModal').style.display = 'flex';
+  renderSettingsUI();
+}
+function closeSettings() {
+  document.getElementById('settingsModal').style.display = 'none';
+}
+function overlayClick(e) {
+  if (e.target.id === 'settingsModal') closeSettings();
+}
+
+function switchTab(tab) {
+  ['topics','names'].forEach(t => {
+    const btn = document.getElementById('tab' + capitalize(t));
+    const cnt = document.getElementById('content' + capitalize(t));
+    if (t === tab) {
+      btn.classList.add('active');
+      cnt.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+      cnt.classList.remove('active');
+    }
+  });
+}
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function updateCounts() {
+  const tc = document.getElementById('topicCount');
+  const nc = document.getElementById('nameCount');
+  if (tc) tc.textContent = themes.length;
+  if (nc) nc.textContent = names.length;
+}
+
+function renderSettingsUI() {
+  renderList('topicsList', themes, 'theme');
+  renderList('namesList',  names,  'name');
+  updateCounts();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderList(listId, arr, type) {
+  const ul = document.getElementById(listId);
+  ul.innerHTML = '';
+  arr.forEach((item, i) => {
+    const li = document.createElement('li');
+    li.className = 'item-row';
+    li.id = `${type}-row-${i}`;
+    li.innerHTML =
+      `<span class="item-number">${i+1}</span>` +
+      `<span class="item-text">${escHtml(item)}</span>` +
+      `<button class="btn-icon" title="編集" onclick="startEdit('${type}',${i})">✏️</button>` +
+      `<button class="btn-icon" title="削除" onclick="deleteItem('${type}',${i})">🗑️</button>`;
+    ul.appendChild(li);
+  });
+}
+
+function startEdit(type, i) {
+  const arr = type === 'theme' ? themes : names;
+  const row = document.getElementById(`${type}-row-${i}`);
+  row.innerHTML =
+    `<span class="item-number">${i+1}</span>` +
+    `<input class="item-input" id="${type}-edit-${i}" value="${escHtml(arr[i])}"` +
+    ` onkeydown="if(event.key==='Enter')confirmEdit('${type}',${i}); if(event.key==='Escape')renderSettingsUI()">` +
+    `<button class="btn-icon" title="保存" onclick="confirmEdit('${type}',${i})" style="color:#22c55e">✅</button>` +
+    `<button class="btn-icon" title="キャンセル" onclick="renderSettingsUI()" style="color:#ef4444">✕</button>`;
+  const inp = document.getElementById(`${type}-edit-${i}`);
+  inp.focus();
+  inp.select();
+}
+
+function confirmEdit(type, i) {
+  const inp = document.getElementById(`${type}-edit-${i}`);
+  const val = inp ? inp.value.trim() : '';
+  if (!val) return;
+  if (type === 'theme') themes[i] = val;
+  else                  names[i]  = val;
+  saveToFirestore();
+}
+
+function deleteItem(type, i) {
+  const arr  = type === 'theme' ? themes : names;
+  const label = type === 'theme' ? 'このトピック' : 'この参加者';
+  if (!confirm(`${label}を削除しますか？\n「${arr[i]}」`)) return;
+  if (type === 'theme') themes.splice(i, 1);
+  else                  names.splice(i, 1);
+  saveToFirestore();
+}
+
+function addTopic() {
+  const inp = document.getElementById('newTopicInput');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  themes.push(val);
+  inp.value = '';
+  saveToFirestore();
+  // リストを一番下にスクロール
+  const content = document.getElementById('contentTopics');
+  setTimeout(() => { content.scrollTop = content.scrollHeight; }, 100);
+}
+
+function addNameItem() {
+  const inp = document.getElementById('newNameInput');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  names.push(val);
+  inp.value = '';
+  saveToFirestore();
+  const content = document.getElementById('contentNames');
+  setTimeout(() => { content.scrollTop = content.scrollHeight; }, 100);
+}
+
+// ===== Web Audio API 効果音 =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function getAudio() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
 function playTick() {
-  const ctx = getAudioCtx();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.frequency.value = 700 + Math.random() * 500;
-  osc.type = 'sine';
-  gain.gain.setValueAtTime(0.07, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.04);
+  const ctx = getAudio();
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.frequency.value = 700 + Math.random()*500; o.type = 'sine';
+  g.gain.setValueAtTime(0.07, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.04);
+  o.start(); o.stop(ctx.currentTime+0.04);
 }
 
 function playDecide() {
-  const ctx = getAudioCtx();
-  [523, 659, 784, 1047].forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = freq; osc.type = 'sine';
-    const t = ctx.currentTime + i * 0.1;
-    gain.gain.setValueAtTime(0.15, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-    osc.start(t); osc.stop(t + 0.35);
+  const ctx = getAudio();
+  [523,659,784,1047].forEach((f,i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = f; o.type = 'sine';
+    const t = ctx.currentTime + i*0.1;
+    g.gain.setValueAtTime(0.15,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+    o.start(t); o.stop(t+0.35);
   });
 }
 
 function playFanfare() {
-  const ctx = getAudioCtx();
-  [392, 523, 659, 784, 1047].forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = freq; osc.type = 'triangle';
-    const t = ctx.currentTime + i * 0.12;
-    gain.gain.setValueAtTime(0.18, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-    osc.start(t); osc.stop(t + 0.4);
+  const ctx = getAudio();
+  [392,523,659,784,1047].forEach((f,i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = f; o.type = 'triangle';
+    const t = ctx.currentTime + i*0.12;
+    g.gain.setValueAtTime(0.18,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+    o.start(t); o.stop(t+0.4);
   });
 }
 
@@ -488,26 +781,20 @@ function launchConfetti() {
   for (let i = 0; i < 50; i++) {
     const c = document.createElement('div');
     c.className = 'confetti';
-    c.style.left = Math.random() * 100 + '%';
-    c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    c.style.width  = (6 + Math.random() * 8) + 'px';
-    c.style.height = (6 + Math.random() * 8) + 'px';
-    c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-    c.style.animationDelay   = Math.random() * 0.4 + 's';
+    c.style.cssText = `left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*0.4}s`;
     container.appendChild(c);
     setTimeout(() => c.remove(), 4000);
   }
 }
 
-// ===== スロット管理 =====
-// theme
-let themeTimer = null;
-let themeInterval = 60;
-let themeStopping = false;
+// ===== スロット（スタート/ストップ）=====
+let themeInterval = 60, themeStopping = false;
+let nameInterval  = 60, nameStopping  = false;
 
 function startTheme() {
-  const textEl  = document.getElementById('themeText');
-  const slotEl  = document.getElementById('themeSlot');
+  if (!themes.length) { alert('トピックが登録されていません'); return; }
+  const textEl   = document.getElementById('themeText');
+  const slotEl   = document.getElementById('themeSlot');
   const startBtn = document.getElementById('themeStartBtn');
   const stopBtn  = document.getElementById('themeStopBtn');
   const badge    = document.getElementById('themeBadge');
@@ -521,24 +808,22 @@ function startTheme() {
   themeStopping = false;
   themeInterval = 60;
 
+  let lastIdx = 0;
   function tick() {
-    const idx = Math.floor(Math.random() * themes.length);
-    textEl.textContent = items_theme_last = themes[idx];
-    items_theme_last_idx = idx;
+    lastIdx = Math.floor(Math.random() * themes.length);
+    textEl.textContent = themes[lastIdx];
     playTick();
     if (!themeStopping) {
-      themeTimer = setTimeout(tick, themeInterval);
+      setTimeout(tick, themeInterval);
     } else {
-      // 減速して止まる
       themeInterval += 35;
       if (themeInterval < 500) {
-        themeTimer = setTimeout(tick, themeInterval);
+        setTimeout(tick, themeInterval);
       } else {
-        // 確定
         slotEl.classList.remove('spinning');
         textEl.classList.add('decided');
-        badge.style.display = 'inline-block';
-        badge.textContent = 'No. ' + (items_theme_last_idx + 1);
+        badge.style.display  = 'inline-block';
+        badge.textContent    = 'No. ' + (lastIdx + 1);
         stopBtn.style.display  = 'none';
         startBtn.style.display = 'inline-flex';
         playDecide();
@@ -549,21 +834,13 @@ function startTheme() {
   tick();
 }
 
-let items_theme_last = '';
-let items_theme_last_idx = 0;
-
 function stopTheme() {
   themeStopping = true;
   document.getElementById('themeStopBtn').disabled = true;
 }
 
-// name
-let nameTimer = null;
-let nameInterval = 60;
-let nameStopping = false;
-let name_last_idx = 0;
-
 function startName() {
+  if (!names.length) { alert('参加者が登録されていません'); return; }
   const textEl   = document.getElementById('nameText');
   const slotEl   = document.getElementById('nameSlot');
   const startBtn = document.getElementById('nameStartBtn');
@@ -578,18 +855,15 @@ function startName() {
   nameInterval = 60;
 
   function tick() {
-    const idx = Math.floor(Math.random() * names.length);
-    textEl.textContent = names[idx];
-    name_last_idx = idx;
+    textEl.textContent = names[Math.floor(Math.random() * names.length)];
     playTick();
     if (!nameStopping) {
-      nameTimer = setTimeout(tick, nameInterval);
+      setTimeout(tick, nameInterval);
     } else {
       nameInterval += 35;
       if (nameInterval < 500) {
-        nameTimer = setTimeout(tick, nameInterval);
+        setTimeout(tick, nameInterval);
       } else {
-        // 確定
         slotEl.classList.remove('spinning');
         textEl.classList.add('decided');
         stopBtn.style.display  = 'none';
