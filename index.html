@@ -350,7 +350,7 @@
   <div class="slot-window" id="themeSlot">
     <div class="slot-text placeholder" id="themeText">スタートを押してね！</div>
   </div>
-  <div class="number-badge" id="themeBadge" style="display:none">No. --</div>
+  <div class="number-badge" id="themeBadge" style="visibility:hidden">No. --</div>
   <div class="btn-group">
     <button class="btn btn-start-theme" id="themeStartBtn" onclick="startTheme()">▶ スタート</button>
     <button class="btn btn-stop" id="themeStopBtn" onclick="stopTheme()" disabled style="display:none">⏹ ストップ</button>
@@ -493,15 +493,15 @@ const defaultThemes = [
 ];
 
 const defaultNames = [
-  "親川翔吾先生",
-  "島袋恵人先生",
-  "金城弥恵先生",
-  "田仲康希先生",
-  "中村千草先生",
-  "堀川晋太朗先生",
-  "宮城翔太先生",
-  "東小浜尚先生",
-  "阿嘉鈴香先生"
+  "親川先生",
+  "島袋先生",
+  "金城先生",
+  "田仲先生",
+  "中村先生",
+  "堀川先生",
+  "宮城先生",
+  "東小浜先生",
+  "阿嘉先生"
 ];
 
 // ===== グローバル状態 =====
@@ -519,6 +519,7 @@ async function initData() {
     console.warn('Firestore初期化エラー:', e);
     themes = [...defaultThemes];
     names  = [...defaultNames];
+    updateCounts();
     return;
   }
 
@@ -584,7 +585,40 @@ function updateCounts() {
   const nc = document.getElementById('nameCount');
   if (tc) tc.textContent = themes.length;
   if (nc) nc.textContent = names.length;
+  fitSlotHeights();
 }
+
+// ===== スロット枠の高さを固定（テーマの行数でボタンが動かないように） =====
+// 全項目のうち一番背が高いものに合わせて枠の高さを決める
+function fitSlotHeight(slotId, items) {
+  const slot = document.getElementById(slotId);
+  const probe = slot.cloneNode(false);
+  probe.removeAttribute('id');
+  probe.classList.remove('spinning');
+  probe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;height:auto;width:' + slot.offsetWidth + 'px';
+  const text = document.createElement('div');
+  probe.appendChild(text);
+  document.body.appendChild(probe);
+  let maxH = 0;
+  const variants = [['slot-text placeholder', 'スタートを押してね！']];
+  items.forEach(item => {
+    variants.push(['slot-text', item], ['slot-text decided', item]);
+  });
+  variants.forEach(([cls, str]) => {
+    text.className = cls;
+    text.textContent = str;
+    maxH = Math.max(maxH, probe.offsetHeight);
+  });
+  probe.remove();
+  slot.style.height = maxH + 'px';
+}
+
+function fitSlotHeights() {
+  fitSlotHeight('themeSlot', themes);
+  fitSlotHeight('nameSlot', names);
+}
+window.addEventListener('resize', fitSlotHeights);
+if (document.fonts) document.fonts.ready.then(fitSlotHeights);
 
 function renderSettingsUI() {
   renderList('topicsList', themes, 'theme');
@@ -733,7 +767,7 @@ function startTheme() {
   const stopBtn  = document.getElementById('themeStopBtn');
   const badge    = document.getElementById('themeBadge');
 
-  badge.style.display = 'none';
+  badge.style.visibility = 'hidden';
   textEl.className = 'slot-text';
   slotEl.classList.add('spinning');
   startBtn.style.display = 'none';
@@ -756,7 +790,7 @@ function startTheme() {
       } else {
         slotEl.classList.remove('spinning');
         textEl.classList.add('decided');
-        badge.style.display  = 'inline-block';
+        badge.style.visibility = 'visible';
         badge.textContent    = 'No. ' + (lastIdx + 1);
         stopBtn.style.display  = 'none';
         startBtn.style.display = 'inline-flex';
