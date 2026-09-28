@@ -505,11 +505,14 @@ const defaultNames = [
 ];
 
 // ===== グローバル状態 =====
-let themes = [];
-let names  = [];
+// Firestore の読み込みを待たずに使えるよう、最初はデフォルトで動かす
+// （ネットワークによっては Firestore への接続が遅い・つながらないため）
+let themes = [...defaultThemes];
+let names  = [...defaultNames];
 
 // ===== Firestore 読み込み・リアルタイム同期 =====
 async function initData() {
+  updateCounts();
   try {
     const snap = await docRef.get();
     if (!snap.exists) {
